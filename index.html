@@ -5,22 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Svensk OSINT Sammanställning</title>
 <style>
-  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #27272a; }
-  svg#mindmap { widdth: 100%; height: 100%; }
+  /* Grundläggande stil för helskärm och ljust tema */
+  body, html { 
+    margin: 0; 
+    padding: 0; 
+    width: 100%; 
+    height: 100%; 
+    overflow: hidden; 
+    background-color: #ffffff; /* Vit bakgrund */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  /* SVG ska ta upp hela ytan */
+  svg#mindmap { 
+    width: 100vw; 
+    height: 100vh; 
+    display: block;
+  }
+
+  /* Justera länkfärger för ljust tema */
+  a { color: #0969da; text-decoration: none; }
+  a:hover { text-decoration: underline; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15.4"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.15.4"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.17.0/dist/browser/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.17.0/dist/index.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.17.0/dist/style.css">
+
 </head>
 <body>
 
 <svg id="mindmap"></svg>
 
 <script>
-// Initiera Markmap
+// Initiera variabler
 const { Markmap, loadCSS, loadJS } = window.markmap;
 
-// Datastruktur för Vecka 49 och 48
+// DATASTRUKTUR - Vecka 49 och 48
 const data = {
   "content": "Svensk OSINT Sammanställning",
   "children": [
@@ -193,7 +215,8 @@ const data = {
           "content": "Globalt & Övrigt",
           "fold": 1,
           "children": [
-            {"content": "<strong>Filippinerna/Frankrike</strong>", "children": [{"content": "Marinövning."}, {"content": "<a href='https://www.linkedin.com/posts/svensk-osint_philippines-and-france-hold-maritime-drills-activity-7401209008574885888-B_b-' target='_blank'>Länk</a>"}]},
+            {
+              "content": "<strong>Filippinerna/Frankrike</strong>", "children": [{"content": "Marinövning."}, {"content": "<a href='https://www.linkedin.com/posts/svensk-osint_philippines-and-france-hold-maritime-drills-activity-7401209008574885888-B_b-' target='_blank'>Länk</a>"}]},
             {"content": "<strong>Mali: Bränsleblockad</strong>", "children": [{"content": "Jihadister lamslår Bamako."}, {"content": "<a href='https://www.linkedin.com/posts/svensk-osint_mali-under-siege-tracking-the-fuel-blockade-activity-7401969752614563840-qkxT' target='_blank'>Länk</a>"}]},
             {"content": "<strong>Sydafrika: Legosoldater</strong>", "children": [{"content": "Radioprofil rekryterade till Ryssland."}, {"content": "<a href='https://www.linkedin.com/feed/update/urn:li:activity:7402347302100676608' target='_blank'>Länk</a>"}]},
             {"content": "<strong>Indonesien: Moskébomb</strong>", "children": [{"content": "Tonåring inspirerad av vit makt."}, {"content": "<a href='https://www.linkedin.com/posts/svensk-osint_jakarta-indonesia-mosque-bomber-columbine-white-activity-7402060494959874048-ztX5' target='_blank'>Länk</a>"}]},
@@ -343,8 +366,10 @@ const data = {
   ]
 };
 
-// Rendera Markmap
+// Rendera Markmap i fullskärm
 const mm = Markmap.create('svg#mindmap', null, data);
+
+// Lägg till verktygsfältet (zoom, etc.)
 const toolbar = new Markmap.Toolbar();
 toolbar.attach(mm);
 const toolbarNode = toolbar.render();
@@ -352,6 +377,10 @@ toolbarNode.style.position = 'absolute';
 toolbarNode.style.bottom = '20px';
 toolbarNode.style.right = '20px';
 document.body.appendChild(toolbarNode);
+
+// Zooma och centrera kartan så den syns perfekt
+mm.fit();
+
 </script>
 
 </body>
