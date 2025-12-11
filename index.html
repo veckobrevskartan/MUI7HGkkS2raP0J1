@@ -4,18 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Svensk OSINT Sammanställning</title>
-<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.8.5/style/jsmind.css" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.8.5/es6/jsmind.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5/style/jsmind.css" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5/es6/jsmind.js"></script>
 
 <style>
+  /* Grundläggande reset */
   body, html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
+    background-color: #f4f7f9;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     overflow: hidden;
-    background-color: #f4f6f8;
-    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   #jsmind_container {
@@ -24,57 +25,65 @@
   }
 
   /* --- NOD-DESIGN --- */
+  /* Detta gör att noderna ser ut som knappar man vill klicka på */
   jmnode {
-    background-color: #ffffff;
-    border-radius: 6px;
+    background-color: #fff;
+    border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 10px 15px;
+    padding: 12px 18px;
     font-size: 14px;
-    max-width: 280px; /* Lite smalare för att spara plats */
+    max-width: 300px;
     white-space: normal !important;
-    line-height: 1.4;
-    border-left: 5px solid #0056b3;
+    line-height: 1.5;
     color: #333;
+    border-left: 6px solid #0056b3; /* Blå kant */
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    cursor: pointer; /* Visar hand-ikonen så man fattar att det går att klicka */
   }
 
   jmnode:hover {
+    transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    z-index: 100; /* Se till att hovrad nod hamnar överst */
+    background-color: #fafafa;
+  }
+
+  /* Vald nod */
+  jmnode.selected {
+    background-color: #e8f0fe !important;
+    box-shadow: 0 0 0 2px #0056b3;
   }
 
   /* Rot-noden (Mitten) */
   jmnode.root {
     background-color: #003366 !important;
     color: white !important;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 20px 30px;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 25px 40px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
   }
 
-  /* Veckonoderna (Nivå 1) - Gör dem tydliga */
-  jmnode[nodeid^="node_week"] {
-    background-color: #e3f2fd;
-    border-left: 5px solid #0288d1;
+  /* Veckonoderna (Nivå 1) - Tydlig färg */
+  jmnode[nodeid^="week_"] {
+    background-color: #ffcc00; /* Gul färg för veckorna */
+    color: #000;
+    border-left: none;
     font-weight: bold;
     font-size: 16px;
+    text-align: center;
   }
-
-  /* --- EXPANDER KNAPP FIX --- */
-  /* Flyttar knappen något och ser till att den ligger överst */
+  
+  /* Dölj den gamla, buggiga expander-knappen helt */
   jsmind-expander {
-    z-index: 1000 !important;
-    cursor: pointer;
-    background-color: white; /* Vit bakgrund på knappen så linjen inte syns igenom */
-    border-radius: 50%;
-    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    display: none !important;
   }
 
-  /* Länkar */
-  a { color: #0066cc; text-decoration: none; font-weight: 600; }
+  /* Länkar inuti noder */
+  a { color: #0066cc; text-decoration: none; font-weight: 600; pointer-events: auto; }
   a:hover { text-decoration: underline; }
-  strong { display: block; margin-bottom: 3px; color: #000; }
+  strong { display: block; margin-bottom: 4px; color: #111; }
+
 </style>
 </head>
 <body>
@@ -82,14 +91,14 @@
 <div id="jsmind_container"></div>
 
 <script>
-
-// --- DIN DATA ---
+// --- DATASTRUKTUR ---
 const rawData = {
   "content": "Svensk OSINT<br/>Veckohändelser",
   "children": [
     // --- VECKA 49 (HÖGER) ---
     {
       "content": "Vecka 49",
+      "isWeek": true, // Markör för att styla denna gul
       "children": [
         {
           "content": "Sverige",
@@ -97,30 +106,29 @@ const rawData = {
             {
               "content": "Brott & Blåljus",
               "children": [
-                {"content": "<strong>Knivdåd på skola (Helsingborg)</strong>Elev gripen, person skadad. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402696400855105536' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Bussattack (Stockholm)</strong>Brandsläckare tömd mot förare. <a href='https://www.linkedin.com/posts/svensk-osint_sprutade-med-brandsl%C3%A4ckare-i-buss-kaos-activity-7401176109024870400-vci8' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Knivdåd på skola (Helsingborg)</strong>Elev gripen. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402696400855105536' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Bussattack (Stockholm)</strong>Brandsläckare mot förare. <a href='https://www.linkedin.com/posts/svensk-osint_sprutade-med-brandsl%C3%A4ckare-i-buss-kaos-activity-7401176109024870400-vci8' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Attack vid socialtjänst</strong>Två kvinnor misshandlade. <a href='https://www.linkedin.com/posts/svensk-osint_kvinnor-attackerade-vid-socialtj%C3%A4nstkontor-activity-7401625855740870656-IDbl' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Spelnätverk krossat</strong>Tillslag i Stockholm & Spanien. <a href='https://www.linkedin.com/posts/svensk-osint_coordinated-strike-hits-violent-criminal-activity-7401643853105000449-dKOE' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Målvakt sålde kontantkort</strong>Åtal för grov näringspenningtvätt. <a href='https://www.linkedin.com/posts/svensk-osint_s%C3%A5lde-kontantkort-till-g%C3%A4ngkriminella-%C3%A5talas-activity-7401931599874961408-lUHw' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Spelnätverk krossat</strong>Tillslag Sthlm & Spanien. <a href='https://www.linkedin.com/posts/svensk-osint_coordinated-strike-hits-violent-criminal-activity-7401643853105000449-dKOE' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Målvakt sålde kontantkort</strong>Grov näringspenningtvätt. <a href='https://www.linkedin.com/posts/svensk-osint_s%C3%A5lde-kontantkort-till-g%C3%A4ngkriminella-%C3%A5talas-activity-7401931599874961408-lUHw' target='_blank'>[Länk]</a>"}
               ]
             },
             {
               "content": "Försvar & Politik",
               "children": [
-                {"content": "<strong>Norrköping Airport</strong>Vill bli beredskapsflygplats. <a href='https://www.linkedin.com/posts/svensk-osint_norrk%C3%B6ping-vill-bli-beredskapsflygplats-igen-activity-7400934420863504384-ND_U' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Marinen & Ryska ubåtar</strong>Sker 'nästan varje vecka'. <a href='https://www.linkedin.com/posts/svensk-osint_swedish-navy-reports-almost-weekly-encounters-activity-7403125860003663872-t-uA' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Framtidens vänster</strong>Nytt parti bildat av avhoppare. <a href='https://www.linkedin.com/posts/svensk-osint_avhoppade-v%C3%A4nsterpartister-bildar-nytt-parti-activity-7402690613168693248-Lsdy' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Norrköping Airport</strong>Beredskapsflygplats? <a href='https://www.linkedin.com/posts/svensk-osint_norrk%C3%B6ping-vill-bli-beredskapsflygplats-igen-activity-7400934420863504384-ND_U' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Marinen & Ryska ubåtar</strong>'Nästan varje vecka'. <a href='https://www.linkedin.com/posts/svensk-osint_swedish-navy-reports-almost-weekly-encounters-activity-7403125860003663872-t-uA' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Framtidens vänster</strong>Nytt parti. <a href='https://www.linkedin.com/posts/svensk-osint_avhoppade-v%C3%A4nsterpartister-bildar-nytt-parti-activity-7402690613168693248-Lsdy' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Expo: Salemmarschen</strong>Nazistmarsch återuppstår. <a href='https://www.linkedin.com/posts/svensk-osint_expo-s%C3%A5-m%C3%A5nga-v%C3%A4ntas-delta-i-nya-salemmarschen-activity-7403013973526249472-DoNm' target='_blank'>[Länk]</a>"}
               ]
             },
             {
               "content": "Rapporter & Debatt",
               "children": [
-                {"content": "<strong>Nationell lägesbild 2025</strong>Polisens lista över utsatta områden. <a href='https://www.linkedin.com/posts/svensk-osint_l%C3%A4gesbild-utsatta-omr%C3%A5den-2025-activity-7401651792293564431-jlDt' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Skärpta regler (LSU)</strong>Hantering av säkerhetshot. <a href='https://www.linkedin.com/posts/svensk-osint_bet%C3%A4nkande-sk%C3%A4rpningar-i-lsu-activity-7401660256994398210-sE0z' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Rapport: Org. brottslighet</strong>Hot mot samhällsmodellen. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7401163646665625601' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Rapport: Unga (ESO)</strong>Förebyggande arbete. <a href='https://www.linkedin.com/posts/svensk-osint_innan-det-%C3%A4r-f%C3%B6r-sent-activity-7403109114219769856-xW-8' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Rapport: Offentliga kontrakt</strong>Kvalitetsaspekter i upphandling. <a href='https://www.linkedin.com/posts/svensk-osint_metoder-f%C3%B6r-att-beakta-kvalitet-i-offentliga-activity-7402030775488888833-gQ78' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Nationell lägesbild 2025</strong>Utsatta områden. <a href='https://www.linkedin.com/posts/svensk-osint_l%C3%A4gesbild-utsatta-omr%C3%A5den-2025-activity-7401651792293564431-jlDt' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Skärpta regler (LSU)</strong>Säkerhetshot. <a href='https://www.linkedin.com/posts/svensk-osint_bet%C3%A4nkande-sk%C3%A4rpningar-i-lsu-activity-7401660256994398210-sE0z' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Rapport: Org. brottslighet</strong>Hot mot samhället. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7401163646665625601' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Rapport: Unga (ESO)</strong>Förebyggande arbete. <a href='https://www.linkedin.com/posts/svensk-osint_innan-det-%C3%A4r-f%C3%B6r-sent-activity-7403109114219769856-xW-8' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -131,17 +139,17 @@ const rawData = {
             {
               "content": "Finland & Norge",
               "children": [
-                {"content": "<strong>Mallet Strike 2/25</strong>Svenskt luftvärn övar i Finland. <a href='https://www.linkedin.com/posts/svensk-osint_luftf%C3%B6rsvars%C3%B6vning-i-lochte%C3%A5-i-norra-finland-activity-7400936682906177537-fdE9' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Norge: Ubåtsköp</strong>Köper två extra Type 212CD. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403345627604058112' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Rysk agent (Norge)</strong>FSB-kopplad man vid Nord universitet. <a href='https://www.linkedin.com/posts/svensk-osint_i-kontakt-med-nord-universitet-under-falskt-activity-7402741402570244096-Y4Vw' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Mallet Strike 2/25</strong>Luftvärn i Finland. <a href='https://www.linkedin.com/posts/svensk-osint_luftf%C3%B6rsvars%C3%B6vning-i-lochte%C3%A5-i-norra-finland-activity-7400936682906177537-fdE9' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Norge: Ubåtsköp</strong>Två extra Type 212CD. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403345627604058112' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Rysk agent (Norge)</strong>FSB-man vid universitet. <a href='https://www.linkedin.com/posts/svensk-osint_i-kontakt-med-nord-universitet-under-falskt-activity-7402741402570244096-Y4Vw' target='_blank'>[Länk]</a>"}
               ]
             },
             {
               "content": "Litauen & Danmark",
               "children": [
-                {"content": "<strong>Litauen: Ballonger</strong>Flygstopp pga hybridhot. <a href='https://www.linkedin.com/posts/svensk-osint_lithuania-capital-airport-closes-again-over-activity-7400975519267090432-n09f' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Litauen: Ballonger</strong>Flygstopp. <a href='https://www.linkedin.com/posts/svensk-osint_lithuania-capital-airport-closes-again-over-activity-7400975519267090432-n09f' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Litauen: Ballongkris</strong>Pekar ut Ryssland. <a href='https://www.linkedin.com/posts/svensk-osint_ballongkris-i-litauen-pekar-ut-ryssland-activity-7403173833165320193-oVh8' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Danmark: Yttrandefrihet</strong>Debatt inom försvarssektorn. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402603407338876929' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Danmark: Yttrandefrihet</strong>Försvarsdebatt. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402603407338876929' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -150,20 +158,21 @@ const rawData = {
           "content": "Ryssland & Hybridkrig",
           "children": [
             {
-              "content": "Ukraina: SBU & Kontra",
+              "content": "Ukraina: SBU",
               "children": [
-                {"content": "<strong>Mordplan (Zaporizjzja)</strong>FSB-agent med IED. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403374593438126081' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Spaning i Bukovina</strong>Kartlade järnväg. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403376452869472256' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Agentfamilj Charkiv</strong>19-årig son gripen. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403379190357475328' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Brittisk instruktör</strong>Misstänks spionera. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403380855852675072' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Mordplan (Zaporizjzja)</strong>FSB-agent IED. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403374593438126081' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Spaning i Bukovina</strong>Järnväg. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403376452869472256' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Agentfamilj Charkiv</strong>Son gripen. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403379190357475328' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Brittisk instruktör</strong>Misstänkt spion. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403380855852675072' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Krigföring & Påverkan",
+              "content": "Krigföring",
               "children": [
-                {"content": "<strong>Gangsterkultur</strong>Kriminella som verktyg. <a href='https://www.linkedin.com/posts/svensk-osint_gangsterv%C3%A4lde-blir-statskonst-i-rysslands-activity-7403033403845107712-goBn' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Essäfabrik & Drönare</strong>Fusk kopplas till vapen. <a href='https://www.linkedin.com/posts/svensk-osint_drones-to-diplomas-how-russias-largest-activity-7403168710464520192-uRx3' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Porsche-bilar</strong>Utslagna i Ryssland. <a href='https://www.linkedin.com/posts/svensk-osint_porche-cars-immobilized-by-cyber-attacks-activity-7401937250864783360-WFIM' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Gangsterkultur</strong>Kriminella verktyg. <a href='https://www.linkedin.com/posts/svensk-osint_gangsterv%C3%A4lde-blir-statskonst-i-rysslands-activity-7403033403845107712-goBn' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Essäfabrik</strong>Ryskt fusk & vapen. <a href='https://www.linkedin.com/posts/svensk-osint_drones-to-diplomas-how-russias-largest-activity-7403168710464520192-uRx3' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Porsche-bilar</strong>Utslagna i Ryssland. <a href='https://www.linkedin.com/posts/svensk-osint_porche-cars-immobilized-by-cyber-attacks-activity-7401937250864783360-WFIM' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Ukraina: Ryska appar</strong>Dataläckor. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402343434260328448' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -172,27 +181,27 @@ const rawData = {
           "content": "Internationellt",
           "children": [
             {
-              "content": "Säkerhet & Hybridhot",
+              "content": "Säkerhet",
               "children": [
-                {"content": "<strong>Turkiet: Spionage i Haag</strong>Kartlägger kritiker. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403371885150785536' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Grekland: Turkisk spion</strong>61-åring gripen. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403378078489645056' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>UK: Ryska spioner</strong>In via lastfartyg. <a href='https://www.linkedin.com/posts/svensk-osint_suspected-russian-spies-entering-uk-using-activity-7402093152452554752-zU-m' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Turkiet: Spionage Haag</strong>Kartlägger kritiker. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403371885150785536' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Grekland: Turkisk spion</strong>Gripen på Chios. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7403378078489645056' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>UK: Ryska spioner</strong>Via lastfartyg. <a href='https://www.linkedin.com/posts/svensk-osint_suspected-russian-spies-entering-uk-using-activity-7402093152452554752-zU-m' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Tyskland & Europa",
+              "content": "Europa",
               "children": [
-                {"content": "<strong>Tyskland: OPLAN</strong>Planer för rysk attack. <a href='https://www.linkedin.com/posts/svensk-osint_germany-readies-massive-defence-plan-to-counter-activity-7401214247923421184-me7g' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Frankrike: Ubåtsbas</strong>Drönare över Île Longue. <a href='https://www.linkedin.com/posts/svensk-osint_france-opens-investigation-after-drones-fly-activity-7403116930632593408-RZvh' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Tyskland: OPLAN</strong>Rysk attackplan. <a href='https://www.linkedin.com/posts/svensk-osint_germany-readies-massive-defence-plan-to-counter-activity-7401214247923421184-me7g' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Frankrike: Ubåtsbas</strong>Drönare Île Longue. <a href='https://www.linkedin.com/posts/svensk-osint_france-opens-investigation-after-drones-fly-activity-7403116930632593408-RZvh' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Spanien: The Base</strong>Terrorcell sprängd. <a href='https://www.linkedin.com/posts/svensk-osint_us-founded-neo-nazi-group-designated-as-activity-7401373161784508416-vtea' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "USA & Nordamerika",
+              "content": "Nordamerika",
               "children": [
-                {"content": "<strong>Immigration Pause</strong>Stopp för 19 länder. <a href='https://www.linkedin.com/posts/svensk-osint_trump-administration-pauses-immigration-applications-activity-7401981468756922368-9wFA' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Immigration Pause</strong>19 länder. <a href='https://www.linkedin.com/posts/svensk-osint_trump-administration-pauses-immigration-applications-activity-7401981468756922368-9wFA' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Security Strategy 2025</strong>America First. <a href='https://www.linkedin.com/posts/svensk-osint_national-security-strategy-activity-7402831540457574400-ZUcK' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Palantir & ICE</strong>Utökat samarbete. <a href='https://www.linkedin.com/posts/svensk-osint_404-media-ice-just-paid-palantir-tens-of-activity-7402464749348749312-G8Yd' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Palantir & ICE</strong>Samarbete. <a href='https://www.linkedin.com/posts/svensk-osint_404-media-ice-just-paid-palantir-tens-of-activity-7402464749348749312-G8Yd' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -202,6 +211,7 @@ const rawData = {
     // --- VECKA 48 (VÄNSTER) ---
     {
       "content": "Vecka 48",
+      "isWeek": true,
       "children": [
         {
           "content": "Sverige",
@@ -209,27 +219,27 @@ const rawData = {
             {
               "content": "Brott & Blåljus",
               "children": [
-                {"content": "<strong>Resväska exploderade (Gällivare)</strong>Pannlampa/batteri misstänks. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7398703317146734593' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Knivbråk Eslöv</strong>Grov misshandel på station. <a href='https://www.linkedin.com/posts/svensk-osint_polis-larmas-till-j%C3%A4rnv%C3%A4gsstationen-med-anledning-activity-7398747470849126400-iFMn' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Intrång telemast (Öland)</strong>Klippt stängsel. <a href='https://www.linkedin.com/posts/svensk-osint_vaktbolag-slog-larm-ok%C3%A4nda-tog-sig-upp-i-activity-7399715264877047808-9Nfu' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Fotoförbud kärnkraftverk</strong>Gripna vid Oskarshamn. <a href='https://www.linkedin.com/posts/svensk-osint_greps-f%C3%B6r-spioneri-vid-k%C3%A4rnkraftverket-activity-7400126369780822016-dT-D' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Nazistmarsch (Stockholm)</strong>Aktivklubb Sverige mobiliserar. <a href='https://www.linkedin.com/posts/svensk-osint_nazistiskt-n%C3%A4tverk-uppmanar-medlemmar-att-activity-7400255289763016704-kvbC' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Resväska exploderade</strong>Gällivare. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7398703317146734593' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Knivbråk Eslöv</strong>Stationen. <a href='https://www.linkedin.com/posts/svensk-osint_polis-larmas-till-j%C3%A4rnv%C3%A4gsstationen-med-anledning-activity-7398747470849126400-iFMn' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Intrång telemast</strong>Öland. <a href='https://www.linkedin.com/posts/svensk-osint_vaktbolag-slog-larm-ok%C3%A4nda-tog-sig-upp-i-activity-7399715264877047808-9Nfu' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Fotoförbud kärnkraftverk</strong>Oskarshamn. <a href='https://www.linkedin.com/posts/svensk-osint_greps-f%C3%B6r-spioneri-vid-k%C3%A4rnkraftverket-activity-7400126369780822016-dT-D' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Nazistmarsch</strong>Sthlm. <a href='https://www.linkedin.com/posts/svensk-osint_nazistiskt-n%C3%A4tverk-uppmanar-medlemmar-att-activity-7400255289763016704-kvbC' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Samhälle & Politik",
+              "content": "Samhälle",
               "children": [
-                {"content": "<strong>Södertälje köper Tingsrätten</strong>Återtar kontroll. <a href='https://www.linkedin.com/posts/svensk-osint_efter-avsl%C3%B6jande-om-g%C3%A4ngkopplingar-kommunen-activity-7398835318608637952-nH1j' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Södertälje/Tingsrätten</strong>Återtar kontroll. <a href='https://www.linkedin.com/posts/svensk-osint_efter-avsl%C3%B6jande-om-g%C3%A4ngkopplingar-kommunen-activity-7398835318608637952-nH1j' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Stenungsundsskredet</strong>Närmare åtal. <a href='https://www.linkedin.com/posts/svensk-osint_steg-n%C3%A4rmare-%C3%A5tal-f%C3%B6r-motorv%C3%A4gsskredet-activity-7399113514469965824-rzub' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Gängkriminella & Bidrag</strong>4000 försörjs av FK. <a href='https://www.linkedin.com/posts/svensk-osint_beslutsdokument-activity-7399720940172906496-36te' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Gäng & Bidrag</strong>4000 hos FK. <a href='https://www.linkedin.com/posts/svensk-osint_beslutsdokument-activity-7399720940172906496-36te' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Försvar & Industri",
+              "content": "Försvar",
               "children": [
-                {"content": "<strong>Spionmisstänkt friad</strong>Affärsman frias i hovrätten. <a href='https://www.linkedin.com/posts/svensk-osint_aff%C3%A4rsmannen-pekades-ut-som-rysk-agent-activity-7399044844377202688-K7dN' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Trafikverket begränsar UE</strong>Max två led. <a href='https://www.linkedin.com/posts/svensk-osint_trafikverket-begr%C3%A4nsar-ue-led-i-miljardprojekt-activity-7398974785885573120-JW5Z' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Drönarprototyp (GKN)</strong>Jetdriven drönare. <a href='https://www.linkedin.com/posts/svensk-osint_sweden-awards-gkn-aerospace-contract-for-activity-7400436958952562688-2-8G' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Spionmisstänkt friad</strong>Hovrätten. <a href='https://www.linkedin.com/posts/svensk-osint_aff%C3%A4rsmannen-pekades-ut-som-rysk-agent-activity-7399044844377202688-K7dN' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Trafikverket UE</strong>Max två led. <a href='https://www.linkedin.com/posts/svensk-osint_trafikverket-begr%C3%A4nsar-ue-led-i-miljardprojekt-activity-7398974785885573120-JW5Z' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Drönarprototyp</strong>GKN Jetdriven. <a href='https://www.linkedin.com/posts/svensk-osint_sweden-awards-gkn-aerospace-contract-for-activity-7400436958952562688-2-8G' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Forskning & Kina</strong>Självcensur. <a href='https://www.linkedin.com/posts/svensk-osint_forskning-med-f%C3%B6rbeh%C3%A5ll-activity-7399713983479554048-qarb' target='_blank'>[Länk]</a>"}
               ]
             }
@@ -239,22 +249,22 @@ const rawData = {
           "content": "Ryssland & Ukraina",
           "children": [
             {
-              "content": "Hybrid & Spionage",
+              "content": "Hybrid",
               "children": [
-                {"content": "<strong>SIM-farmer</strong>300 servrar i NY. <a href='https://www.linkedin.com/posts/svensk-osint_sim-farms-are-a-spam-plague-a-giant-one-activity-7398642992842088450-ueCg' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Ikea-attentat (Litauen)</strong>Dömd för anlagd brand. <a href='https://www.linkedin.com/posts/svensk-osint_lithuanian-court-convicts-man-in-arson-attack-activity-7398848727756476416-M4Vh' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Rumänska pass</strong>Falska identiteter via Moldavien. <a href='https://www.linkedin.com/posts/svensk-osint_romanian-passports-for-russians-obtained-activity-7400210470785400833-s4Y6' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Skuggflottan brinner</strong>Två tankers i Svarta havet. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400470201575706624' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Ryssland säljer guld</strong>Stöttar budgeten. <a href='https://www.linkedin.com/posts/svensk-osint_russia-starts-selling-off-its-gold-reserves-activity-7399165595470098432-9k_7' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>SIM-farmer</strong>300 servrar NY. <a href='https://www.linkedin.com/posts/svensk-osint_sim-farms-are-a-spam-plague-a-giant-one-activity-7398642992842088450-ueCg' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Ikea-attentat</strong>Litauen. <a href='https://www.linkedin.com/posts/svensk-osint_lithuanian-court-convicts-man-in-arson-attack-activity-7398848727756476416-M4Vh' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Rumänska pass</strong>Via Moldavien. <a href='https://www.linkedin.com/posts/svensk-osint_romanian-passports-for-russians-obtained-activity-7400210470785400833-s4Y6' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Skuggflottan</strong>Brinner i Svarta havet. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400470201575706624' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Ryskt guld</strong>Säljs av. <a href='https://www.linkedin.com/posts/svensk-osint_russia-starts-selling-off-its-gold-reserves-activity-7399165595470098432-9k_7' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Ukraina: Inre Säkerhet",
+              "content": "Ukraina Inre",
               "children": [
                 {"content": "<strong>Octopus-drönaren</strong>Masstillverkning. <a href='https://www.linkedin.com/posts/svensk-osint_ukraine-war-briefing-mass-production-of-activity-7399045556167249920-4TM0' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Korruption (Jermak)</strong>Stabschef avgår. <a href='https://www.linkedin.com/posts/svensk-osint_ukraine-anticorruption-investigators-search-activity-7400202914935373824-22kB' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Dubbelattack (Dnipro)</strong>16-åring med bomber. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400884466359066625' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>IED-nätverk sprängt</strong>Unga byggde bombgömmor. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400891144848576514' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Korruption (Jermak)</strong>Stabschef. <a href='https://www.linkedin.com/posts/svensk-osint_ukraine-anticorruption-investigators-search-activity-7400202914935373824-22kB' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Dnipro-bomb</strong>16-åring. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400884466359066625' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>IED-nätverk</strong>Sprängt. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400891144848576514' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -265,28 +275,28 @@ const rawData = {
             {
               "content": "Europa",
               "children": [
-                {"content": "<strong>Frankrike: Drönare</strong>SNCF mot kopparstöld. <a href='https://www.linkedin.com/posts/svensk-osint_france-deploys-drones-to-fight-copper-cable-activity-7398751167528296449-lN0T' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Frankrike: Påverkan</strong>SOS Donbass-nätverket. <a href='https://www.linkedin.com/posts/svensk-osint_three-people-arrested-in-paris-on-suspicion-activity-7399341119056035844-i9aY' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Storbritannien: Cyber</strong>Tre kommuner utslagna. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400882781309988864' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Danmark: Ambassaddåd</strong>Svenskar åtalas. <a href='https://www.linkedin.com/posts/svensk-osint_terror%C3%A5talad-ton%C3%A5ring-medger-morduppdrag-activity-7399677387292094464--C7q' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Polen: Ryskt sabotage</strong>Desinformation. <a href='https://www.linkedin.com/posts/svensk-osint_%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F-activity-7400261190712459264-CU6w' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Holmberg (Terror)</strong>Svensk dömd i Luxemburg. <a href='https://www.linkedin.com/posts/svensk-osint_alexander-holmberg-23-d%C3%B6ms-f%C3%B6r-terrorplaner-activity-7399809590512652289-CTmx' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Frankrike: Koppar</strong>Drönare. <a href='https://www.linkedin.com/posts/svensk-osint_france-deploys-drones-to-fight-copper-cable-activity-7398751167528296449-lN0T' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Frankrike: Påverkan</strong>SOS Donbass. <a href='https://www.linkedin.com/posts/svensk-osint_three-people-arrested-in-paris-on-suspicion-activity-7399341119056035844-i9aY' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>UK: Cyber</strong>London-kommuner. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400882781309988864' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Danmark: Ambassad</strong>Åtal. <a href='https://www.linkedin.com/posts/svensk-osint_terror%C3%A5talad-ton%C3%A5ring-medger-morduppdrag-activity-7399677387292094464--C7q' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Polen: Sabotage</strong>Desinfo. <a href='https://www.linkedin.com/posts/svensk-osint_%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F-activity-7400261190712459264-CU6w' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Holmberg</strong>Dömd terror. <a href='https://www.linkedin.com/posts/svensk-osint_alexander-holmberg-23-d%C3%B6ms-f%C3%B6r-terrorplaner-activity-7399809590512652289-CTmx' target='_blank'>[Länk]</a>"}
               ]
             },
             {
               "content": "Nordamerika",
               "children": [
-                {"content": "<strong>Skjutning DC</strong>National Guard skjutna. <a href='https://www.linkedin.com/posts/svensk-osint_national-guardsmen-shot-in-washington-dc-activity-7399725669385048065-dI1g' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Haiti-kupp (Texas)</strong>Privat invasion planerad. <a href='https://www.linkedin.com/posts/svensk-osint_%C3%B6kuppen-activity-7398804953617649664-Os3F' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>DJI Ban</strong>Stopp för kinesiska drönare. <a href='https://www.linkedin.com/posts/svensk-osint_dji-ban-how-the-worlds-biggest-dronemaker-activity-7400295371006091265-eTj2' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Skjutning DC</strong>National Guard. <a href='https://www.linkedin.com/posts/svensk-osint_national-guardsmen-shot-in-washington-dc-activity-7399725669385048065-dI1g' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Haiti-kupp</strong>Texas. <a href='https://www.linkedin.com/posts/svensk-osint_%C3%B6kuppen-activity-7398804953617649664-Os3F' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>DJI Ban</strong>USA. <a href='https://www.linkedin.com/posts/svensk-osint_dji-ban-how-the-worlds-biggest-dronemaker-activity-7400295371006091265-eTj2' target='_blank'>[Länk]</a>"}
               ]
             },
             {
-              "content": "Asien & Övrigt",
+              "content": "Asien/Övrigt",
               "children": [
-                {"content": "<strong>Kina: Knownsec</strong>Hackningsverktyg läckta. <a href='https://www.linkedin.com/posts/svensk-osint_another-chinese-security-firm-has-its-data-activity-7399403862174015489-C0CN' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Vietnam: 5G</strong>Öppnar för Huawei. <a href='https://www.linkedin.com/posts/svensk-osint_huawei-and-zte-win-5g-deals-in-vietnam-as-activity-7400258197493792768-Zwtp' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Turkiet/ISIS</strong>MIT-agent avslöjad. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400886247822389250' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Kina: Knownsec</strong>Läckta verktyg. <a href='https://www.linkedin.com/posts/svensk-osint_another-chinese-security-firm-has-its-data-activity-7399403862174015489-C0CN' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Vietnam: 5G</strong>Huawei. <a href='https://www.linkedin.com/posts/svensk-osint_huawei-and-zte-win-5g-deals-in-vietnam-as-activity-7400258197493792768-Zwtp' target='_blank'>[Länk]</a>"},
+                {"content": "<strong>Turkiet/ISIS</strong>MIT-agent. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7400886247822389250' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -296,17 +306,14 @@ const rawData = {
   ]
 };
 
-// --- OMVANDLING & ID-LOGIK ---
+// --- LOGIK: OMVANDLA DATA + FIXA KLICK ---
 let idCounter = 1;
 
 function transformToJsMind(node, direction = null) {
-  // Särskilj på "veckor" (nivå 1) och "övriga noder" med ID
-  // Veckor får prefixet "node_week_" så vi kan styla dem i CSS
-  const isWeek = node.content.startsWith("Vecka");
-  const id = isWeek ? "node_week_" + idCounter++ : "node_" + idCounter++;
+  const isWeek = !!node.isWeek;
+  const id = isWeek ? "week_" + idCounter++ : "node_" + idCounter++;
   
-  // Allt startar stängt (expanded: false) utom roten, som jsMind hanterar separat.
-  // Du klickar för att öppna en vecka.
+  // Allt startar stängt (false) utom roten
   const expanded = false; 
 
   const newNode = {
@@ -314,8 +321,7 @@ function transformToJsMind(node, direction = null) {
     "topic": node.content,
     "expanded": expanded,
   };
-  
-  // Riktning sätts BARA på veckorna. Barnen ärver flödet naturligt.
+
   if (direction) {
     newNode.direction = direction;
   }
@@ -323,28 +329,24 @@ function transformToJsMind(node, direction = null) {
   if (node.children && node.children.length > 0) {
     newNode.children = node.children.map(child => transformToJsMind(child));
   }
-
   return newNode;
 }
 
-// Skapa datastruktur för jsMind
 const mindData = {
   "meta": { "name": "OSINT Mindmap", "author": "Svensk OSINT", "version": "1.0" },
   "format": "node_tree",
   "data": { "id": "root", "topic": rawData.content, "children": [] }
 };
 
-// Lägg till veckorna (Varannan Höger / Vänster)
 if (rawData.children) {
   rawData.children.forEach((child, index) => {
-    // Jämna nummer (0, 2, 4...) = Höger
-    // Udda nummer (1, 3, 5...) = Vänster
+    // Varannan höger/vänster
     const dir = index % 2 === 0 ? "right" : "left"; 
     mindData.data.children.push(transformToJsMind(child, dir));
   });
 }
 
-// --- INSTÄLLNINGAR (VIKTIGT FÖR LAYOUTEN) ---
+// --- INITIERA ---
 const options = {
   container: 'jsmind_container',
   theme: 'primary', 
@@ -352,21 +354,39 @@ const options = {
   view: {
     support_html: true,
     line_width: 2,
-    line_color: '#aab', // Ljusare linjefärg
-    draggable: true,
-    hmargin: 100 // Marginal till kanten
+    line_color: '#aab',
+    draggable: true, 
+    hmargin: 100 // Marginaler
   },
   layout: {
-    hspace: 100, // VIKTIGT: Ökat horisontellt avstånd (var 30-50, nu 100)
-    vspace: 15,  // Vertikalt avstånd
-    pspace: 25   // Avstånd mellan nod och expander-knapp
+    hspace: 60, // Horisontellt avstånd
+    vspace: 15, // Vertikalt avstånd
+    pspace: 15  
   }
 };
 
 const jm = new jsMind(options);
 jm.show(mindData);
 
-// Centrera vyn snyggt
+// --- DET HÄR ÄR MAGIN ---
+// Lägg till en klick-lyssnare på hela containern
+// Om man klickar på en nod (jmnode), toggla den (öppna/stäng)
+document.getElementById('jsmind_container').addEventListener('click', function(e) {
+  const target = e.target.closest('jmnode'); // Hitta närmaste jmnode
+  
+  // Om vi klickade på en länk inuti noden, gör inget (låt länken funka)
+  if (e.target.tagName.toLowerCase() === 'a') return;
+
+  if (target) {
+    const nodeId = target.getAttribute('nodeid');
+    if (nodeId && nodeId !== 'root') { // Toggla inte roten
+      jm.toggle_node(nodeId);
+      // Centrera inte om varje gång, det blir ryckigt.
+    }
+  }
+});
+
+// Centrera vid start
 setTimeout(() => {
     const container = document.getElementById('jsmind_container');
     const scrollX = (container.scrollWidth - container.clientWidth) / 2;
@@ -375,8 +395,7 @@ setTimeout(() => {
     jm.resize();
 }, 200);
 
-// Hantera fönsterstorlek
-window.addEventListener('resize', () => { jm.resize(); });
+window.addEventListener('resize', () => jm.resize());
 
 </script>
 
