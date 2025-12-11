@@ -14,8 +14,8 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #f0f2f5;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f4f6f8;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   #jsmind_container {
@@ -23,29 +23,28 @@
     height: 100vh;
   }
 
-  /* --- DESIGN PÅ NODERNA --- */
+  /* --- NOD-DESIGN --- */
   jmnode {
-    background-color: #fff;
+    background-color: #ffffff;
     border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     padding: 10px 15px;
     font-size: 14px;
-    max-width: 300px;
-    white-space: normal !important; /* Radbrytning */
+    max-width: 280px; /* Lite smalare för att spara plats */
+    white-space: normal !important;
     line-height: 1.4;
-    border-left: 5px solid #0056b3; /* Blå kantmarkering */
+    border-left: 5px solid #0056b3;
     color: #333;
-    transition: all 0.2s ease;
   }
 
   jmnode:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    z-index: 100; /* Se till att hovrad nod hamnar överst */
   }
 
   /* Rot-noden (Mitten) */
   jmnode.root {
-    background-color: #003366 !important; /* Mörkblå */
+    background-color: #003366 !important;
     color: white !important;
     font-size: 20px;
     font-weight: bold;
@@ -54,31 +53,28 @@
     border-radius: 8px;
   }
 
-  /* Veckonoderna (Nivå 1) */
-  /* Vi stiliserar dem via JS-logik istället för CSS för att vara säkra */
-  
-  /* --- FIX FÖR KNAPPARNA PÅ VÄNSTER SIDA --- */
-  /* Detta tvingar expander-knappen att ligga överst så den går att klicka på */
+  /* Veckonoderna (Nivå 1) - Gör dem tydliga */
+  jmnode[nodeid^="node_week"] {
+    background-color: #e3f2fd;
+    border-left: 5px solid #0288d1;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* --- EXPANDER KNAPP FIX --- */
+  /* Flyttar knappen något och ser till att den ligger överst */
   jsmind-expander {
-    z-index: 9999 !important; 
+    z-index: 1000 !important;
     cursor: pointer;
+    background-color: white; /* Vit bakgrund på knappen så linjen inte syns igenom */
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
   }
 
   /* Länkar */
-  a {
-    color: #0066cc;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  
-  strong {
-    display: block;
-    margin-bottom: 3px;
-    color: #111;
-  }
+  a { color: #0066cc; text-decoration: none; font-weight: 600; }
+  a:hover { text-decoration: underline; }
+  strong { display: block; margin-bottom: 3px; color: #000; }
 </style>
 </head>
 <body>
@@ -91,6 +87,7 @@
 const rawData = {
   "content": "Svensk OSINT<br/>Veckohändelser",
   "children": [
+    // --- VECKA 49 (HÖGER) ---
     {
       "content": "Vecka 49",
       "children": [
@@ -104,8 +101,7 @@ const rawData = {
                 {"content": "<strong>Bussattack (Stockholm)</strong>Brandsläckare tömd mot förare. <a href='https://www.linkedin.com/posts/svensk-osint_sprutade-med-brandsl%C3%A4ckare-i-buss-kaos-activity-7401176109024870400-vci8' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Attack vid socialtjänst</strong>Två kvinnor misshandlade. <a href='https://www.linkedin.com/posts/svensk-osint_kvinnor-attackerade-vid-socialtj%C3%A4nstkontor-activity-7401625855740870656-IDbl' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Spelnätverk krossat</strong>Tillslag i Stockholm & Spanien. <a href='https://www.linkedin.com/posts/svensk-osint_coordinated-strike-hits-violent-criminal-activity-7401643853105000449-dKOE' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Målvakt sålde kontantkort</strong>Åtal för grov näringspenningtvätt. <a href='https://www.linkedin.com/posts/svensk-osint_s%C3%A5lde-kontantkort-till-g%C3%A4ngkriminella-%C3%A5talas-activity-7401931599874961408-lUHw' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Svensk gripen i Kosovo</strong>Efterlyst för grovt narkotikabrott. <a href='https://www.linkedin.com/posts/svensk-osint_svt-nyheter-activity-7401874779080654848-n9pW' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Målvakt sålde kontantkort</strong>Åtal för grov näringspenningtvätt. <a href='https://www.linkedin.com/posts/svensk-osint_s%C3%A5lde-kontantkort-till-g%C3%A4ngkriminella-%C3%A5talas-activity-7401931599874961408-lUHw' target='_blank'>[Länk]</a>"}
               ]
             },
             {
@@ -167,8 +163,7 @@ const rawData = {
               "children": [
                 {"content": "<strong>Gangsterkultur</strong>Kriminella som verktyg. <a href='https://www.linkedin.com/posts/svensk-osint_gangsterv%C3%A4lde-blir-statskonst-i-rysslands-activity-7403033403845107712-goBn' target='_blank'>[Länk]</a>"},
                 {"content": "<strong>Essäfabrik & Drönare</strong>Fusk kopplas till vapen. <a href='https://www.linkedin.com/posts/svensk-osint_drones-to-diplomas-how-russias-largest-activity-7403168710464520192-uRx3' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Porsche-bilar</strong>Utslagna i Ryssland. <a href='https://www.linkedin.com/posts/svensk-osint_porche-cars-immobilized-by-cyber-attacks-activity-7401937250864783360-WFIM' target='_blank'>[Länk]</a>"},
-                {"content": "<strong>Ukraina: Ryska appar</strong>Förare läcker data. <a href='https://www.linkedin.com/feed/update/urn:li:activity:7402343434260328448' target='_blank'>[Länk]</a>"}
+                {"content": "<strong>Porsche-bilar</strong>Utslagna i Ryssland. <a href='https://www.linkedin.com/posts/svensk-osint_porche-cars-immobilized-by-cyber-attacks-activity-7401937250864783360-WFIM' target='_blank'>[Länk]</a>"}
               ]
             }
           ]
@@ -204,6 +199,7 @@ const rawData = {
         }
       ]
     },
+    // --- VECKA 48 (VÄNSTER) ---
     {
       "content": "Vecka 48",
       "children": [
@@ -300,27 +296,30 @@ const rawData = {
   ]
 };
 
-// --- KONVERTERING LOGIK ---
+// --- OMVANDLING & ID-LOGIK ---
 let idCounter = 1;
 
-function transformToJsMind(node, direction = null, isWeek = false) {
-  const id = "node_" + idCounter++;
+function transformToJsMind(node, direction = null) {
+  // Särskilj på "veckor" (nivå 1) och "övriga noder" med ID
+  // Veckor får prefixet "node_week_" så vi kan styla dem i CSS
+  const isWeek = node.content.startsWith("Vecka");
+  const id = isWeek ? "node_week_" + idCounter++ : "node_" + idCounter++;
   
-  // HÄR ÄR NYCKELN:
-  // Vi sätter expanded till false på ALLT förutom roten.
-  // Detta gör att kartan startar "stängd" (compact view).
+  // Allt startar stängt (expanded: false) utom roten, som jsMind hanterar separat.
+  // Du klickar för att öppna en vecka.
   const expanded = false; 
 
   const newNode = {
     "id": id,
     "topic": node.content,
     "expanded": expanded,
-    "direction": direction
   };
-
-  // Om veckonummer (nivå 1), ge den en specifik färg/stil via JS om man vill,
-  // men just nu sätter vi färgen via CSS på första nivån barn till root.
   
+  // Riktning sätts BARA på veckorna. Barnen ärver flödet naturligt.
+  if (direction) {
+    newNode.direction = direction;
+  }
+
   if (node.children && node.children.length > 0) {
     newNode.children = node.children.map(child => transformToJsMind(child));
   }
@@ -335,39 +334,39 @@ const mindData = {
   "data": { "id": "root", "topic": rawData.content, "children": [] }
 };
 
-// Lägg till veckorna (Höger / Vänster)
+// Lägg till veckorna (Varannan Höger / Vänster)
 if (rawData.children) {
   rawData.children.forEach((child, index) => {
-    // Jämna index = Höger, Udda = Vänster
+    // Jämna nummer (0, 2, 4...) = Höger
+    // Udda nummer (1, 3, 5...) = Vänster
     const dir = index % 2 === 0 ? "right" : "left"; 
-    // Vi skickar med 'true' för att markera att detta är en vecka
-    mindData.data.children.push(transformToJsMind(child, dir, true));
+    mindData.data.children.push(transformToJsMind(child, dir));
   });
 }
 
-// --- INSTÄLLNINGAR ---
+// --- INSTÄLLNINGAR (VIKTIGT FÖR LAYOUTEN) ---
 const options = {
   container: 'jsmind_container',
   theme: 'primary', 
   editable: false,
   view: {
-    support_html: true, // Viktigt för länkar
+    support_html: true,
     line_width: 2,
-    line_color: '#bcc',
+    line_color: '#aab', // Ljusare linjefärg
     draggable: true,
-    hmargin: 80 // Extra marginal på sidorna för att inte klippa innehåll
+    hmargin: 100 // Marginal till kanten
   },
   layout: {
-    hspace: 80, // ÖKAT AVSTÅND: Fixar problemet med att noder täcker knappar
-    vspace: 15, 
-    pspace: 15  
+    hspace: 100, // VIKTIGT: Ökat horisontellt avstånd (var 30-50, nu 100)
+    vspace: 15,  // Vertikalt avstånd
+    pspace: 25   // Avstånd mellan nod och expander-knapp
   }
 };
 
 const jm = new jsMind(options);
 jm.show(mindData);
 
-// Centrera vyn
+// Centrera vyn snyggt
 setTimeout(() => {
     const container = document.getElementById('jsmind_container');
     const scrollX = (container.scrollWidth - container.clientWidth) / 2;
