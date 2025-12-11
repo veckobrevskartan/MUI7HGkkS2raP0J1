@@ -3,48 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Svensk OSINT Sammanställning</title>
+<title>Svensk OSINT Mindmap</title>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5/style/jsmind.css" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5/es6/jsmind.js"></script>
+
 <style>
-  /* Grundläggande stil för helskärm och ljust tema */
-  body, html { 
-    margin: 0; 
-    padding: 0; 
-    width: 100%; 
-    height: 100%; 
-    overflow: hidden; 
-    background-color: #ffffff; /* Vit bakgrund */
+  body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f4f7f6; /* Ljusgrå bakgrund för bättre läsbarhet */
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
-  
-  /* SVG ska ta upp hela ytan */
-  svg#mindmap { 
-    width: 100vw; 
-    height: 100vh; 
+
+  /* Behållaren för kartan */
+  #jsmind_container {
+    width: 100vw;
+    height: 100vh;
     display: block;
   }
 
-  /* Justera länkfärger för ljust tema */
-  a { color: #0969da; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  /* Justering av noder */
+  jmnode {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    font-size: 14px;
+    max-width: 350px; /* Bredd på textrutorna */
+    white-space: normal !important; /* Tillåter radbrytning */
+    line-height: 1.4;
+    padding: 8px 12px;
+  }
+
+  /* Särskild stil för rot-noden */
+  jmnode.root {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #003366 !important; /* Mörkblå OSINT-färg */
+    color: white !important;
+  }
+
+  /* Länkstyling */
+  jmnode a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  jmnode a:hover {
+    text-decoration: underline;
+    color: #003366;
+  }
+  
+  /* Styling för strong-taggar för att de ska synas tydligt */
+  strong {
+    color: #333;
+    display: block;
+    margin-bottom: 2px;
+  }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.17.0/dist/browser/index.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.17.0/dist/index.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.17.0/dist/style.css">
-
 </head>
 <body>
 
-<svg id="mindmap"></svg>
+<div id="jsmind_container"></div>
 
 <script>
-// Initiera variabler
-const { Markmap, loadCSS, loadJS } = window.markmap;
 
-// DATASTRUKTUR - Vecka 49 och 48
-const data = {
-  "content": "Svensk OSINT Sammanställning",
+// --- DIN KOMPLETTA DATA ---
+const rawData = {
+  "content": "Svensk OSINT<br/>Veckohändelser",
   "children": [
     {
       "content": "Vecka 49",
@@ -365,20 +392,92 @@ const data = {
   ]
 };
 
-// Rendera Markmap i fullskärm
-const mm = Markmap.create('svg#mindmap', null, data);
+// --- LOGIK FÖR ATT OMVANDLA DATAN TILL JSMIND-FORMAT ---
 
-// Lägg till verktygsfältet (zoom, etc.)
-const toolbar = new Markmap.Toolbar();
-toolbar.attach(mm);
-const toolbarNode = toolbar.render();
-toolbarNode.style.position = 'absolute';
-toolbarNode.style.bottom = '20px';
-toolbarNode.style.right = '20px';
-document.body.appendChild(toolbarNode);
+let idCounter = 1;
 
-// Zooma och centrera kartan så den syns perfekt
-mm.fit();
+function transformToJsMind(node, direction = null) {
+  // Skapa ett unikt ID för jsMind
+  const id = "node_" + idCounter++;
+  
+  // Översätt "fold: 1" till jsMinds "expanded: false"
+  // Om fold saknas, är den expanderad som standard.
+  const expanded = node.fold ? false : true;
+
+  const newNode = {
+    "id": id,
+    "topic": node.content,
+    "expanded": expanded
+  };
+
+  // Sätt riktning (bara relevant för första nivån under roten)
+  if (direction) {
+    newNode.direction = direction;
+  }
+
+  // Rekursiv hantering av barn
+  if (node.children && node.children.length > 0) {
+    newNode.children = node.children.map(child => transformToJsMind(child));
+  }
+
+  return newNode;
+}
+
+// Skapa rot-noden
+const mindData = {
+  "meta": {
+    "name": "OSINT Mindmap",
+    "author": "Svensk OSINT",
+    "version": "1.0"
+  },
+  "format": "node_tree",
+  "data": {
+    "id": "root",
+    "topic": rawData.content,
+    "children": []
+  }
+};
+
+// Logik för att lägga veckorna åt varsitt håll
+if (rawData.children) {
+  rawData.children.forEach((child, index) => {
+    // Index 0 (Vecka 49) = Höger (right)
+    // Index 1 (Vecka 48) = Vänster (left)
+    // Om du lägger till Vecka 50 överst senare, hamnar den till Höger, och Vecka 49 flyttas till Vänster.
+    const dir = index % 2 === 0 ? "right" : "left"; 
+    mindData.data.children.push(transformToJsMind(child, dir));
+  });
+}
+
+// --- INITIERA KARTAN ---
+const options = {
+  container: 'jsmind_container',
+  theme: 'primary', 
+  editable: false,
+  view: {
+    support_html: true, // Viktigt för att länkarna ska fungera
+    draggable: true,    
+    line_width: 2,      
+    line_color: '#888'  
+  },
+  layout: {
+    hspace: 50, // Horisontellt avstånd mellan noder
+    vspace: 15, // Vertikalt avstånd mellan noder
+    pspace: 13  // Avstånd till "expand"-knappen
+  }
+};
+
+const jm = new jsMind(options);
+jm.show(mindData);
+
+// Centrera kartan vid start
+setTimeout(() => {
+    const container = document.getElementById('jsmind_container');
+    container.scrollTo(
+        (container.scrollWidth - container.clientWidth) / 2,
+        (container.scrollHeight - container.clientHeight) / 2
+    );
+}, 200);
 
 </script>
 
